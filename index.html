@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daniel Carter | Systems Administrator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #eef2f7;
+      color: #1f2937;
+      line-height: 1.6;
+      padding: 30px 16px;
+    }
+
+    .resume-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #16324f, #1f4e79);
+      color: white;
+      padding: 36px 40px;
+    }
+
+    .header h1 {
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 1.05rem;
+      opacity: 0.95;
+      margin-bottom: 6px;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      padding: 28px 32px 0;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px 32px 32px;
+    }
+
+    .section {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 22px;
+    }
+
+    .section h2 {
+      font-size: 1.2rem;
+      margin-bottom: 14px;
+      color: #16324f;
+      border-bottom: 2px solid #dbe4f0;
+      padding-bottom: 8px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .summary p,
+    .contact p {
+      margin-bottom: 10px;
+      font-size: 0.96rem;
+      color: #374151;
+    }
+
+    .contact p:last-child,
+    .summary p:last-child {
+      margin-bottom: 0;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      background: #dbeafe;
+      color: #1e3a8a;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .timeline-item {
+      margin-bottom: 18px;
+    }
+
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .timeline-item h3 {
+      font-size: 1rem;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .timeline-item .meta {
+      font-size: 0.9rem;
+      color: #2563eb;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .timeline-item ul {
+      padding-left: 18px;
+    }
+
+    .timeline-item li {
+      margin-bottom: 6px;
+      color: #4b5563;
+      font-size: 0.95rem;
+    }
+
+    .project-card {
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #dbe4f0;
+    }
+
+    .project-card:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .project-card h3 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+
+    .project-card p {
+      font-size: 0.95rem;
+      color: #4b5563;
+    }
+
+    .cert-list,
+    .edu-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .cert-list li,
+    .edu-list li {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      color: #374151;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .cert-list li::before,
+    .edu-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #2563eb;
+      font-weight: bold;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+      .top-grid,
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        padding: 28px 24px;
+      }
+
+      .top-grid,
+      .content-grid {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="resume-container">
+    <div class="header">
+      <h1>Daniel Carter</h1>
+      <p>Senior Systems Administrator | Cloud Infrastructure | Azure | Microsoft 365</p>
+      <p>Toronto, Ontario, Canada | daniel.carter@example.com | linkedin.com/in/danielcartertech</p>
+    </div>
+
+    <div class="top-grid">
+      <div class="section summary">
+        <h2>Professional Summary</h2>
+        <p>
+          Experienced Systems Administrator with 8+ years of hands-on experience supporting
+          enterprise infrastructure across Windows Server, Microsoft 365, Azure, virtualization,
+          networking, storage, and endpoint management.
+        </p>
+        <p>
+          Proven track record of improving reliability, reducing manual effort through automation,
+          and supporting both on-premises and cloud environments for growing organizations.
+        </p>
+        <p>
+          Strong background in server administration, identity and access management, backup and recovery,
+          infrastructure monitoring, and technical documentation.
+        </p>
+      </div>
+
+      <div class="section contact">
+        <h2>Contact</h2>
+        <p><strong>Email:</strong> daniel.carter@example.com</p>
+        <p><strong>Phone:</strong> (416) 555-0184</p>
+        <p><strong>LinkedIn:</strong> <a href="#">linkedin.com/in/danielcartertech</a></p>
+        <p><strong>GitHub:</strong> <a href="#">github.com/dcarterlabs</a></p>
+        <p><strong>Location:</strong> Toronto, Ontario</p>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="section full-width">
+        <h2>Technical Skills</h2>
+        <div class="tag-list">
+          <span class="tag">Azure Administration</span>
+          <span class="tag">Windows Server</span>
+          <span class="tag">Microsoft 365</span>
+          <span class="tag">Entra ID</span>
+          <span class="tag">PowerShell</span>
+          <span class="tag">VMware</span>
+          <span class="tag">Hyper-V</span>
+          <span class="tag">Linux Administration</span>
+          <span class="tag">Networking</span>
+          <span class="tag">DNS / DHCP</span>
+          <span class="tag">Group Policy</span>
+          <span class="tag">Backup & Recovery</span>
+          <span class="tag">Security Hardening</span>
+          <span class="tag">Azure Virtual Machines</span>
+          <span class="tag">Azure Storage</span>
+          <span class="tag">Monitoring & Alerts</span>
+        </div>
+      </div>
+
+      <div class="section full-width">
+        <h2>Professional Experience</h2>
+
+        <div class="timeline-item">
+          <h3>Senior Systems Administrator — NorthRiver Financial Group</h3>
+          <div class="meta">2022 – Present</div>
+          <ul>
+            <li>Administered hybrid infrastructure across Azure, VMware, Microsoft 365, and on-prem Windows Server environments.</li>
+            <li>Implemented Azure virtual machines, storage accounts, VNets, NSGs, and monitoring solutions for internal business services.</li>
+            <li>Automated user provisioning, license management, and reporting tasks using PowerShell and Microsoft Graph.</li>
+            <li>Led server patching, vulnerability remediation, backup validation, and disaster recovery testing.</li>
+            <li>Improved operational documentation and standardized infrastructure deployment processes.</li>
+          </ul>
+        </div>
+
+        <div class="timeline-item">
+          <h3>Systems Administrator — MapleTech Solutions</h3>
+          <div class="meta">2019 – 2022</div>
+          <ul>
+            <li>Managed Windows Server, Active Directory, DNS, DHCP, Group Policy, and file services for a multi-site organization.</li>
+            <li>Supported Microsoft 365 services including Exchange Online, SharePoint Online, Teams, and OneDrive.</li>
+            <li>Maintained VMware-based virtual infrastructure and supported storage, snapshots, and capacity planning.</li>
+            <li>Configured backup jobs, monitored infrastructure performance, and responded to system and network incidents.</li>
+            <li>Worked with networking teams to troubleshoot VPN, firewall, and routing issues impacting business operations.</li>
+          </ul>
+        </div>
+
+        <div class="timeline-item">
+          <h3>IT Infrastructure Analyst — Greenline Property Services</h3>
+          <div class="meta">2016 – 2019</div>
+          <ul>
+            <li>Provided tier 2 and tier 3 support for servers, Microsoft 365, endpoint devices, printers, and enterprise applications.</li>
+            <li>Deployed new servers, assisted with domain migrations, and supported onboarding/offboarding processes.</li>
+            <li>Created technical documentation, support procedures, and knowledge base articles for internal teams.</li>
+            <li>Performed routine maintenance on backup systems, antivirus platforms, and patch management tools.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Education</h2>
+        <ul class="edu-list">
+          <li><strong>Diploma in Computer Systems Administration</strong><br>Centennial College, Toronto, ON</li>
+          <li><strong>Advanced Certificate in Network Administration</strong><br>Sheridan College, Oakville, ON</li>
+          <li><strong>Continuing Education in Cloud & Infrastructure Technologies</strong><br>Professional Development Programs</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Certifications</h2>
+        <ul class="cert-list">
+          <li>Microsoft Certified: Azure Administrator Associate (AZ-104)</li>
+          <li>Microsoft 365 Certified: Modern Desktop Administrator Associate</li>
+          <li>CompTIA Network+</li>
+          <li>CompTIA Security+</li>
+          <li>VMware Certified Technical Associate (VCTA)</li>
+          <li>ITIL 4 Foundation</li>
+        </ul>
+      </div>
+
+      <div class="section full-width">
+        <h2>Projects</h2>
+
+        <div class="project-card">
+          <h3>Azure Monitoring and Alerting Lab</h3>
+          <p>
+            Built an Azure lab environment using virtual machines, Log Analytics, Azure Monitor,
+            and action groups to test alerting, diagnostics, and infrastructure visibility.
+          </p>
+        </div>
+
+        <div class="project-card">
+          <h3>Hybrid Identity Deployment</h3>
+          <p>
+            Designed a hybrid identity proof of concept with Active Directory, Microsoft Entra ID,
+            synchronization, and role-based access for administrative accounts.
+          </p>
+        </div>
+
+        <div class="project-card">
+          <h3>Virtualization Home Lab</h3>
+          <p>
+            Created a multi-host virtualization lab to practice Windows Server administration,
+            Linux services, backups, snapshots, networking, and infrastructure automation.
+          </p>
+        </div>
+
+        <div class="project-card">
+          <h3>PowerShell Automation Toolkit</h3>
+          <p>
+            Developed scripts for user lifecycle tasks, health checks, system inventory, and reporting
+            to reduce repetitive manual administration work.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
