@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Azure Insights — Application Groups Deep Dive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --white: #ffffff;
+      --off-white: #f7f8fa;
+      --border: #e4e8ee;
+      --border-light: #eef1f5;
+      --text: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --azure: #0078d4;
+      --azure-light: #eff6ff;
+      --azure-mid: #bfdbfe;
+      --azure-dark: #005a9e;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --radius: 6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* HEADER */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--text); }
+    .logo-mark {
+      width: 28px; height: 28px; background: var(--azure); border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark svg { width: 16px; height: 16px; fill: white; }
+    .logo-name { font-size: 0.9rem; font-weight: 500; letter-spacing: -0.01em; }
+    .logo-name span { color: var(--azure); }
+
+    nav { display: flex; align-items: center; gap: 0.25rem; }
+    nav a {
+      font-size: 0.83rem; color: var(--text-secondary); text-decoration: none;
+      padding: 0.35rem 0.75rem; border-radius: var(--radius);
+      transition: background 0.15s, color 0.15s; font-weight: 400;
+    }
+    nav a:hover { background: var(--off-white); color: var(--text); }
+    .nav-cta { background: var(--azure) !important; color: white !important; font-weight: 500 !important; }
+    .nav-cta:hover { background: var(--azure-dark) !important; }
+
+    /* BREADCRUMB */
+    .breadcrumb {
+      max-width: 1100px; margin: 0 auto; padding: 1rem 2rem 0;
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--text-muted);
+    }
+    .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--azure); }
+    .breadcrumb .sep { color: var(--border); }
+    .breadcrumb .current { color: var(--text-secondary); }
+
+    /* LAYOUT */
+    .page {
+      max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 5rem;
+      display: grid; grid-template-columns: 1fr 300px; gap: 4rem; align-items: start;
+    }
+
+    /* ARTICLE HEADER */
+    .article-header { margin-bottom: 2.5rem; }
+    .article-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .tag {
+      font-size: 0.72rem; font-weight: 500; letter-spacing: 0.04em;
+      text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 3px;
+    }
+    .tag-azure { background: var(--azure-light); color: var(--azure-dark); }
+    .tag-governance { background: #fef3c7; color: #92400e; }
+    .tag-featured { background: var(--green-bg); color: var(--green); }
+
+    .article-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.9rem, 3.5vw, 2.75rem);
+      line-height: 1.18; letter-spacing: -0.02em; color: var(--text); margin-bottom: 1.1rem;
+    }
+    .article-subtitle {
+      font-size: 1.05rem; color: var(--text-secondary); line-height: 1.65;
+      max-width: 620px; margin-bottom: 1.5rem; font-weight: 300;
+    }
+    .article-meta {
+      display: flex; align-items: center; gap: 1.5rem;
+      padding-top: 1.25rem; border-top: 1px solid var(--border-light);
+    }
+    .author { display: flex; align-items: center; gap: 0.6rem; }
+    .author-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #0078d4, #50beff);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 500; color: white;
+    }
+    .author-info { display: flex; flex-direction: column; }
+    .author-name { font-size: 0.83rem; font-weight: 500; color: var(--text); }
+    .author-role { font-size: 0.72rem; color: var(--text-muted); }
+    .meta-divider { width: 1px; height: 24px; background: var(--border); }
+    .meta-item { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; }
+
+    /* HERO DIAGRAM */
+    .hero-diagram {
+      margin: 2.5rem 0; background: var(--off-white);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 2.5rem; display: flex; align-items: center; justify-content: center;
+    }
+    .diagram-flow { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .diagram-node { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+    .node-box {
+      background: white; border: 1.5px solid var(--border); border-radius: var(--radius);
+      padding: 0.65rem 1.1rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap;
+    }
+    .node-box.highlight { border-color: var(--azure); color: var(--azure-dark); background: var(--azure-light); font-weight: 500; }
+    .node-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+    .diagram-arrow { padding: 0 0.75rem; color: var(--border); font-size: 1.1rem; padding-bottom: 1.2rem; }
+
+    /* ARTICLE BODY */
+    .article-body { color: var(--text-secondary); font-weight: 300; }
+    .article-body p { margin-bottom: 1.25rem; font-size: 1rem; line-height: 1.8; }
+    .article-body h2 {
+      font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--text);
+      margin: 2.5rem 0 0.85rem; letter-spacing: -0.01em;
+    }
+    .article-body strong { color: var(--text); font-weight: 500; }
+    .article-body a { color: var(--azure); text-decoration: none; }
+    .article-body a:hover { text-decoration: underline; }
+
+    .callout {
+      background: var(--azure-light); border-left: 3px solid var(--azure);
+      border-radius: 0 var(--radius) var(--radius) 0; padding: 1rem 1.25rem;
+      margin: 1.5rem 0; font-size: 0.92rem; color: var(--azure-dark);
+    }
+    .callout strong { color: var(--azure-dark); }
+
+    pre {
+      background: #1e2433; color: #a9b8cc; border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem; line-height: 1.7; overflow-x: auto; margin: 1.25rem 0 1.5rem;
+    }
+    pre .kw { color: #7dd3fc; }
+    pre .str { color: #86efac; }
+    pre .cm { color: #6b7280; font-style: italic; }
+    pre .hl { color: #fde68a; }
+
+    .article-body ul { padding-left: 1.25rem; margin-bottom: 1.25rem; }
+    .article-body li { margin-bottom: 0.4rem; font-size: 1rem; line-height: 1.7; }
+
+    .article-end {
+      margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+    .share-label { font-size: 0.83rem; color: var(--text-muted); }
+    .share-btns { display: flex; gap: 0.5rem; }
+    .share-btn {
+      font-size: 0.78rem; font-weight: 500; padding: 0.4rem 0.9rem;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      cursor: pointer; background: white; color: var(--text-secondary);
+      transition: border-color 0.15s, color 0.15s; font-family: inherit;
+    }
+    .share-btn:hover { border-color: var(--azure); color: var(--azure); }
+
+    /* SIDEBAR */
+    .sidebar { display: flex; flex-direction: column; gap: 1.75rem; }
+    .sidebar-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+    .sidebar-card-title {
+      font-size: 0.72rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 1rem;
+      padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-light);
+    }
+
+    .progress-bar-track { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 0.75rem; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--azure); border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+    .reading-stats { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); }
+
+    .toc { display: flex; flex-direction: column; }
+    .toc-item {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      padding: 0.45rem 0; border-bottom: 1px solid var(--border-light);
+      text-decoration: none; color: var(--text-secondary); font-size: 0.83rem; transition: color 0.15s;
+    }
+    .toc-item:last-child { border-bottom: none; }
+    .toc-item:hover { color: var(--azure); }
+    .toc-num { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-muted); min-width: 18px; padding-top: 0.1rem; }
+
+    .services-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .service-item { display: flex; align-items: center; gap: 0.6rem; font-size: 0.83rem; color: var(--text-secondary); }
+    .service-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--azure); flex-shrink: 0; }
+
+    .deploy-card { background: linear-gradient(135deg, var(--azure) 0%, #0095e8 100%); border: none; color: white; }
+    .deploy-card .sidebar-card-title { color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.15); }
+    .deploy-card p { font-size: 0.83rem; color: rgba(255,255,255,0.85); line-height: 1.6; margin-bottom: 1rem; }
+    .deploy-btn {
+      width: 100%; background: white; color: var(--azure-dark); border: none;
+      border-radius: var(--radius); padding: 0.6rem 1rem; font-size: 0.83rem;
+      font-weight: 500; cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+    }
+    .deploy-btn:hover { opacity: 0.9; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 1.75rem 2rem; }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-left { font-size: 0.78rem; color: var(--text-muted); }
+    .footer-links { display: flex; gap: 1.25rem; }
+    .footer-links a { font-size: 0.78rem; color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--azure); }
+    .azure-badge {
+      display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem;
+      color: var(--azure); background: var(--azure-light);
+      border: 1px solid var(--azure-mid); padding: 0.3rem 0.7rem; border-radius: 3px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 800px) {
+      .page { grid-template-columns: 1fr; gap: 2.5rem; }
+      .sidebar { order: -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .sidebar .deploy-card { grid-column: span 2; }
+    }
+    @media (max-width: 540px) {
+      nav a:not(.nav-cta) { display: none; }
+      .sidebar { display: flex; flex-direction: column; }
+      .diagram-flow { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); padding: 0.4rem 0; }
+      .article-meta { flex-wrap: wrap; gap: 0.75rem; }
+      .meta-divider { display: none; }
+    }
+
+    .fade-up { animation: fadeUp 0.5s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .d1 { animation-delay: 0.05s; }
+    .d2 { animation-delay: 0.13s; }
+    .d3 { animation-delay: 0.22s; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16"><path d="M8 1L14 5v6l-6 4-6-4V5z"/></svg>
+      </div>
+      <span class="logo-name">Azure<span>Insights</span></span>
+    </a>
+    <nav>
+      <a href="#">Articles</a>
+      <a href="#">Guides</a>
+      <a href="#">Reference</a>
+      <a href="#" class="nav-cta">Azure Portal →</a>
+    </nav>
+  </div>
+</header>
+
+<div class="breadcrumb fade-up">
+  <a href="#">Home</a><span class="sep">/</span>
+  <a href="#">Governance</a><span class="sep">/</span>
+  <span class="current">Application Groups</span>
+</div>
+
+<div class="page">
+  <main>
+
+    <header class="article-header fade-up d1">
+      <div class="article-tags">
+        <span class="tag tag-featured">Featured</span>
+        <span class="tag tag-azure">Azure Virtual Desktop</span>
+        <span class="tag tag-governance">Governance</span>
+      </div>
+      <h1 class="article-title">How Azure Application Groups<br/>Organise and Govern Access</h1>
+      <p class="article-subtitle">Application Groups are the core access-delegation primitive in Azure Virtual Desktop — and a useful pattern for broader workload governance. Here's how they work, why they matter, and how to deploy them.</p>
+      <div class="article-meta">
+        <div class="author">
+          <div class="author-avatar">SM</div>
+          <div class="author-info">
+            <span class="author-name">Sam Mitchell</span>
+            <span class="author-role">Cloud Architecture, Microsoft MVP</span>
+          </div>
+        </div>
+        <div class="meta-divider"></div>
+        <span class="meta-item">📅 March 18, 2025</span>
+        <div class="meta-divider"></div>
+        <span class="meta-item">⏱ 8 min read</span>
+      </div>
+    </header>
+
+    <div class="hero-diagram fade-up d2">
+      <div class="diagram-flow">
+        <div class="diagram-node">
+          <div class="node-box">Azure Subscription</div>
+          <div class="node-label">Scope</div>
+        </div>
+        <div class="diagram-arrow">→</div>
+        <div class="diagram-node">
+          <div class="node-box">Host Pool</div>
+          <div class="node-label">Compute</div>
+        </div>
+        <div class="diagram-arrow">→</div>
+        <div class="diagram-node">
+          <div class="node-box highlight">Application Group</div>
+          <div class="node-label">Access Layer</div>
+        </div>
+        <div class="diagram-arrow">→</div>
+        <div class="diagram-node">
+          <div class="node-box">Users / Groups</div>
+          <div class="node-label">Assigned Principals</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="article-body fade-up d3" id="article-body">
+
+      <p>As Azure environments grow in complexity, the question of <strong>who can access what</strong> becomes harder to answer cleanly. Azure Application Groups address this directly — they give you a named, auditable unit that bundles published resources and maps them to users, sitting neatly between your compute infrastructure and your end users.</p>
+
+      <div class="callout">
+        <strong>Definition:</strong> An Application Group is an Azure resource that publishes either a full Remote Desktop or a set of individual RemoteApp applications to assigned users — all served from a Host Pool of session hosts.
+      </div>
+
+      <h2 id="s1">What Problem Do They Solve?</h2>
+      <p>Without Application Groups, access control in a virtual desktop environment degrades quickly. You end up either giving everyone a full desktop (overly broad), or managing per-user session host permissions manually (unmanageable at scale). Application Groups insert a clean abstraction layer: the resource definition lives in the group, and you assign Azure AD users or groups to it — nothing more required.</p>
+      <p>This maps naturally onto team structures. The <em>Finance</em> team gets the Finance Application Group, which publishes their ERP client and Power BI gateway. The <em>Engineering</em> team gets a separate group with their own toolset. Users see only what they're assigned.</p>
+
+      <h2 id="s2">Types of Application Groups</h2>
+      <p>There are two types, and you can have multiple groups per Host Pool:</p>
+      <ul>
+        <li><strong>Desktop Application Group</strong> — publishes a full Windows desktop session. One per Host Pool. Best for users who need a general-purpose virtual workstation.</li>
+        <li><strong>RemoteApp Application Group</strong> — publishes individual applications. Users see those apps in their Start menu or browser. Multiple RemoteApp groups can share a single Host Pool, which is the cost-efficient choice for specialised workloads.</li>
+      </ul>
+
+      <h2 id="s3">Deploying with Azure CLI</h2>
+      <p>Creating an Application Group is a three-step process: create the Host Pool, create the Application Group linked to it, then assign users.</p>
+<pre><span class="cm"># Step 1 — Create the Host Pool</span>
+az desktopvirtualization hostpool create \
+  --resource-group <span class="hl">myRG</span> \
+  --name <span class="hl">myHostPool</span> \
+  --host-pool-type <span class="str">Pooled</span> \
+  --load-balancer-type <span class="str">BreadthFirst</span> \
+  --location <span class="str">eastus</span>
+
+<span class="cm"># Step 2 — Create a RemoteApp Application Group</span>
+az desktopvirtualization applicationgroup create \
+  --resource-group <span class="hl">myRG</span> \
+  --name <span class="hl">FinanceApps</span> \
+  --host-pool-arm-path <span class="str">/subscriptions/.../hostpools/myHostPool</span> \
+  --application-group-type <span class="str">RemoteApp</span> \
+  --location <span class="str">eastus</span>
+
+<span class="cm"># Step 3 — Assign a user group</span>
+az role assignment create \
+  --role <span class="str">"Desktop Virtualization User"</span> \
+  --assignee <span class="hl">finance-team@contoso.com</span> \
+  --scope <span class="str">/subscriptions/.../applicationGroups/FinanceApps</span></pre>
+
+      <h2 id="s4">Governance &amp; RBAC Integration</h2>
+      <p>Application Groups integrate directly with Azure RBAC. The <strong>Desktop Virtualization User</strong> built-in role is the correct assignment — it grants users permission to connect without any ability to modify infrastructure. Platform administrators keep the <strong>Desktop Virtualization Contributor</strong> role at the resource group level.</p>
+      <p>Assigning roles at the Application Group scope rather than the subscription means user access is narrowly scoped by design — satisfying least-privilege requirements without additional configuration.</p>
+
+      <h2 id="s5">Tagging for Cost Attribution</h2>
+      <p>For organisations running multiple Application Groups, tagging is essential for accurate cost reporting. Apply a consistent schema at creation time:</p>
+<pre>{
+  <span class="str">"ApplicationGroup"</span>: <span class="hl">"FinanceApps"</span>,
+  <span class="str">"Team"</span>:             <span class="hl">"Finance"</span>,
+  <span class="str">"Environment"</span>:     <span class="hl">"Production"</span>,
+  <span class="str">"CostCentre"</span>:      <span class="hl">"CC-20041"</span>
+}</pre>
+      <p>In Azure Cost Management, filter by the <code>ApplicationGroup</code> tag to produce per-team cost breakdowns. This is particularly useful in demo environments — stakeholders can see exactly what each Application Group costs, isolated from other resources.</p>
+
+      <h2 id="s6">Deploying This Demo to Azure Static Web Apps</h2>
+      <p>This page is itself deployed on Azure Static Web Apps — a fully managed static hosting service with built-in global CDN and free SSL. To deploy your own copy:</p>
+      <ul>
+        <li>Push <code>index.html</code> and <code>staticwebapp.config.json</code> to a GitHub repository</li>
+        <li>Create an Azure Static Web App resource linked to that repo</li>
+        <li>Azure generates a GitHub Actions workflow that deploys on every push to <code>main</code></li>
+        <li>Your site is live on a <code>*.azurestaticapps.net</code> URL in under two minutes</li>
+      </ul>
+
+      <div class="article-end">
+        <span class="share-label">Found this useful? Share it.</span>
+        <div class="share-btns">
+          <button class="share-btn" onclick="navigator.clipboard.writeText(location.href).then(()=>this.textContent='Copied!')">Copy link</button>
+          <button class="share-btn">LinkedIn</button>
+          <button class="share-btn">Teams</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Reading Progress</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div class="reading-stats">
+        <span id="progress-pct">0% complete</span>
+        <span>~8 min read</span>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">In This Article</div>
+      <div class="toc">
+        <a class="toc-item" href="#s1"><span class="toc-num">01</span>What Problem Do They Solve?</a>
+        <a class="toc-item" href="#s2"><span class="toc-num">02</span>Types of Application Groups</a>
+        <a class="toc-item" href="#s3"><span class="toc-num">03</span>Deploying with Azure CLI</a>
+        <a class="toc-item" href="#s4"><span class="toc-num">04</span>Governance &amp; RBAC</a>
+        <a class="toc-item" href="#s5"><span class="toc-num">05</span>Tagging for Cost Attribution</a>
+        <a class="toc-item" href="#s6"><span class="toc-num">06</span>Deploy This Demo Site</a>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Related Azure Services</div>
+      <div class="services-list">
+        <div class="service-item"><div class="service-dot"></div>Azure Virtual Desktop</div>
+        <div class="service-item"><div class="service-dot"></div>Azure Active Directory</div>
+        <div class="service-item"><div class="service-dot"></div>Azure Static Web Apps</div>
+        <div class="service-item"><div class="service-dot"></div>Azure Role-Based Access Control</div>
+        <div class="service-item"><div class="service-dot"></div>Azure Cost Management</div>
+        <div class="service-item"><div class="service-dot"></div>Azure Policy</div>
+      </div>
+    </div>
+
+    <div class="sidebar-card deploy-card">
+      <div class="sidebar-card-title">Deploy This Demo</div>
+      <p>Deploy this static blog to Azure Static Web Apps in under two minutes — free tier, global CDN included.</p>
+      <button class="deploy-btn">View Deployment Guide →</button>
+    </div>
+
+  </aside>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <span class="footer-left">© 2025 Azure Insights · A static blog demo</span>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="azure-badge">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L14 5v6l-6 4-6-4V5z"/></svg>
+      Hosted on Azure Static Web Apps
+    </div>
+  </div>
+</footer>
+
+<script>
+  const fill = document.getElementById('progress-fill');
+  const pct  = document.getElementById('progress-pct');
+  const body = document.getElementById('article-body');
+  window.addEventListener('scroll', () => {
+    const rect = body.getBoundingClientRect();
+    const scrolled = Math.max(0, -rect.top + window.innerHeight * 0.5);
+    const progress = Math.min(100, Math.round((scrolled / body.offsetHeight) * 100));
+    fill.style.width = progress + '%';
+    pct.textContent = progress + '% complete';
+  });
+</script>
+</body>
+</html>
